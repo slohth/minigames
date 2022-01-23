@@ -1,0 +1,5 @@
+main: dev.slohth.minigames.plugin.MinigamesPlugin
+name: Minigames
+version: "DEV"
+commands:
+  test:
