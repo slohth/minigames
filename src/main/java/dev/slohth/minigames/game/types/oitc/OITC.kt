@@ -29,6 +29,7 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
 
         players[profile] = GameData()
         profile.player().gameMode = GameMode.ADVENTURE
+        profile.player().exp = 0F
 
         if (players.size == minPlayers() && state() == GameState.AWAITNG) initCountdown()
 
@@ -51,7 +52,7 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
             end(*players.keys.toTypedArray())
         }
 
-        if (players.isEmpty()) TODO("Unregistering game")
+        if (players.isEmpty()) core.gameManager().unregister(this)
     }
 
     override fun playerCount(): Int {
@@ -97,6 +98,7 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
 
         data.killstreak(data.killstreak() + 1)
         data.kills(data.kills() + 1)
+        player.giveExpLevels(1)
 
         player.health = 20.0
         player.saturation = 20.0f
@@ -126,11 +128,24 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
     }
 
     override fun start() {
-        TODO("Not yet implemented")
+        state(GameState.ONGOING)
+        for (entry: Map.Entry<Profile, GameData> in players.entries) {
+            entry.key.player().teleport(arena().getSpawn(entry.key, entry.value))
+            handleInventory(entry.key)
+        }
     }
 
     override fun end(vararg winners: Profile) {
-        TODO("Not yet implemented")
+        state(GameState.ENDED)
+
+    }
+
+    fun topKillers(): LinkedHashMap<Profile, Int> {
+        val killers: LinkedHashMap<Profile, Int> = LinkedHashMap()
+
+        TODO("ALGORITHM")
+
+        return killers
     }
 
     private fun broadcast(vararg msg: String) {
