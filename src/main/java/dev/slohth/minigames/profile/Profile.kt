@@ -1,6 +1,6 @@
 package dev.slohth.minigames.profile
 
-import dev.slohth.minigames.game.Game
+import dev.slohth.minigames.game.data.GameData
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
@@ -9,7 +9,7 @@ import java.util.*
 
 data class Profile(private val id: UUID) {
 
-    private var game: Game? = null
+    private var data: GameData? = null
 
     fun msg(vararg messages: String) {
         val builder: StringBuilder = StringBuilder()
@@ -23,7 +23,7 @@ data class Profile(private val id: UUID) {
 
     fun id(): UUID { return id }
 
-    fun game(): Game? { return game }
-    fun game(game: Game?) { this.game = game }
+    fun data(): GameData? { return data }
+    fun data(data: GameData?) { this.data = data }
 
 }

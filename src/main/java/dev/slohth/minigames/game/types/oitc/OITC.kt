@@ -17,17 +17,22 @@ import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
+import java.util.*
+import kotlin.collections.HashSet
+import kotlin.collections.LinkedHashMap
 
 data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CHAMBER, 2, 8) {
 
-    private val players: MutableMap<Profile, GameData> = HashMap()
+    private val players: MutableSet<Profile> = HashSet()
 
     private var countdown: BukkitTask? = null
 
     override fun addPlayer(profile: Profile): Boolean {
-        if (players.size >= maxPlayers() || state() == GameState.ONGOING || players.containsKey(profile)) return false
+        if (players.size >= maxPlayers() || state() == GameState.ONGOING || players.contains(profile)) return false
 
-        players[profile] = GameData()
+        players.add(profile)
+        profile.data(GameData(this))
+
         profile.player().gameMode = GameMode.ADVENTURE
         profile.player().exp = 0F
 
@@ -43,13 +48,13 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
         if (profile.player().isGlowing) profile.player().isGlowing = false
         profile.player().gameMode = GameMode.ADVENTURE
         profile.player().teleport(Lobby.location())
-        profile.game(null)
+        profile.data(null)
 
         if (players.size < minPlayers() && state() == GameState.COUNTDOWN) {
             broadcast("&3&l☞ &7Not enough players to start")
             countdown?.cancel()
         } else if (players.size == 1 && state() == GameState.ONGOING) {
-            end(*players.keys.toTypedArray())
+            end(*players.toTypedArray())
         }
 
         if (players.isEmpty()) core.gameManager().unregister(this)
@@ -75,10 +80,10 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
     }
 
     override fun handleDeath(profile: Profile, killer: Profile?) {
-        if (!players.containsKey(profile) || (killer != null && !players.containsKey(killer))) return
+        if (!players.contains(profile) || (killer != null && !players.contains(killer))) return
 
-        players[profile]!!.killstreak(0)
-        players[profile]!!.kills(players[profile]!!.kills() + 1)
+        profile.data()!!.killstreak(0)
+        profile.data()!!.kills(profile.data()!!.kills() + 1)
         profile.player().inventory.clear()
         profile.player().gameMode = GameMode.SPECTATOR
         profile.player().sendTitle(CC.color("&cYou died!"), CC.color("&7Respawning"), 20, 20, 20)
@@ -88,12 +93,12 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
                 if (state() == GameState.ENDED) { cancel(); return; }
                 handleInventory(profile)
                 profile.player().gameMode = GameMode.ADVENTURE
-                profile.player().teleport(arena().getSpawn(profile, players[profile]!!))
+                profile.player().teleport(arena().getSpawn(profile, profile.data()!!))
             }
         }
         if (killer == null) return
 
-        val data: GameData = players[killer]!!
+        val data: GameData = killer.data()!!
         val player: Player = killer.player()
 
         data.killstreak(data.killstreak() + 1)
@@ -129,9 +134,9 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
 
     override fun start() {
         state(GameState.ONGOING)
-        for (entry: Map.Entry<Profile, GameData> in players.entries) {
-            entry.key.player().teleport(arena().getSpawn(entry.key, entry.value))
-            handleInventory(entry.key)
+        for (profile: Profile in players) {
+            profile.player().teleport(arena().getSpawn(profile, profile.data()!!))
+            handleInventory(profile)
         }
     }
 
@@ -140,16 +145,16 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
 
     }
 
-    fun topKillers(): LinkedHashMap<Profile, Int> {
-        val killers: LinkedHashMap<Profile, Int> = LinkedHashMap()
+    fun topKillers(): LinkedList<Profile> {
+        val killers: LinkedList<Profile> = LinkedList(players)
 
-        TODO("ALGORITHM")
+
 
         return killers
     }
 
     private fun broadcast(vararg msg: String) {
-        for (profile: Profile in players.keys) profile.msg(*msg)
+        for (profile: Profile in players) profile.msg(*msg)
     }
 
 }
