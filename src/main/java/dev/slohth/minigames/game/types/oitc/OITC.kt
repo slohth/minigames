@@ -2,24 +2,21 @@ package dev.slohth.minigames.game.types.oitc
 
 import dev.slohth.minigames.Minigames
 import dev.slohth.minigames.arena.Lobby
-import dev.slohth.minigames.arena.types.OITCArena
 import dev.slohth.minigames.game.Game
 import dev.slohth.minigames.game.GameState
 import dev.slohth.minigames.game.GameType
 import dev.slohth.minigames.game.data.GameData
+import dev.slohth.minigames.game.data.comparator.KillsComparator
 import dev.slohth.minigames.profile.Profile
 import dev.slohth.minigames.utils.CC
 import dev.slohth.minigames.utils.ItemBuilder
-import org.bukkit.Effect
-import org.bukkit.GameMode
-import org.bukkit.Material
-import org.bukkit.Sound
+import org.bukkit.*
+import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
 import java.util.*
-import kotlin.collections.HashSet
-import kotlin.collections.LinkedHashMap
+
 
 data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CHAMBER, 2, 8) {
 
@@ -48,7 +45,12 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
         if (profile.player().isGlowing) profile.player().isGlowing = false
         profile.player().gameMode = GameMode.ADVENTURE
         profile.player().teleport(Lobby.location())
+        profile.player().exp = 0F
         profile.data(null)
+
+        profile.player().inventory.clear()
+
+
 
         if (players.size < minPlayers() && state() == GameState.COUNTDOWN) {
             broadcast("&3&l☞ &7Not enough players to start")
@@ -95,7 +97,7 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
                 profile.player().gameMode = GameMode.ADVENTURE
                 profile.player().teleport(arena().getSpawn(profile, profile.data()!!))
             }
-        }
+        }.runTaskLater(core.plugin(), 100)
         if (killer == null) return
 
         val data: GameData = killer.data()!!
@@ -142,14 +144,32 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
 
     override fun end(vararg winners: Profile) {
         state(GameState.ENDED)
+        val message: MutableList<String> = ArrayList(listOf("&7Top killers this game:"))
 
+        var index = 1
+        for (profile: Profile in topKillers()) {
+            message.add("&3${index++}: &7${profile.player().name} - ${profile.data()!!.kills()} " +
+                    if (profile.data()!!.kills() == 1) "kill" else "kills")
+        }
+        message.add(" ")
+
+        for (profile: Profile in players) {
+            if (profile != winners[0]) profile.player().gameMode = GameMode.SPECTATOR
+            profile.player().sendTitle(ChatColor.GOLD.toString() + winners[0].player().name, "Won the game!", 20, 20, 20)
+
+            Bukkit.getScheduler().runTaskLater(core.plugin(),
+                Runnable { profile.msg(" ", "&6" + winners[0].player().name + " has won the game!", " ") }, 10)
+            Bukkit.getScheduler().runTaskLater(core.plugin(), Runnable { profile.msg(*CC.color(message).toTypedArray()) }, 20)
+            Bukkit.getScheduler().runTaskLater(core.plugin(), Runnable { removePlayer(profile) }, 100)
+        }
+
+        winners[0].player().inventory.helmet = ItemBuilder(Material.GOLDEN_HELMET).enchantment(Enchantment.DURABILITY).build()
+        winners[0].player().isGlowing = true
     }
 
     fun topKillers(): LinkedList<Profile> {
         val killers: LinkedList<Profile> = LinkedList(players)
-
-
-
+        Collections.sort(killers, KillsComparator())
         return killers
     }
 
