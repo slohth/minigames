@@ -21,11 +21,16 @@ class GameManager(private val core: Minigames) {
 
     fun registerNew(game: Game, location: Location) {
         games[game.id()] = game
-
+        signs[location] = game.id()
+        updateSign(location)
     }
 
     fun unregister(game: Game) {
+        val sign: Location? = signFromGame(game)
 
+
+
+        game.listener().unregister()
     }
 
     fun updateSign(location: Location) {

@@ -10,7 +10,7 @@ import java.io.IOException
 
 enum class Config(private val identifier: String) {
 
-    ARENAS("arenas");
+    CONFIG("config");
 
     private val file: File
     private val config: YamlConfiguration

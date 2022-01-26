@@ -19,7 +19,7 @@ class OITCArena(private val core: Minigames) : Arena("arenas.one-in-the-chamber.
     init { load() }
 
     override fun load() {
-        for (key: String in Config.ARENAS.getStringList(path())) {
+        for (key: String in Config.CONFIG.getStringList(path())) {
             val loc: List<String> = key.split(",")
             locations.add(Location(
                 Bukkit.getWorld(loc[0]),
@@ -39,9 +39,7 @@ class OITCArena(private val core: Minigames) : Arena("arenas.one-in-the-chamber.
         while (cooldown.contains(spawn)) spawn = random()
         cooldown.add(spawn)
 
-        Bukkit.getScheduler().runTaskLaterAsynchronously(core.plugin(), object: BukkitRunnable() {
-            override fun run() { cooldown.remove(spawn) }
-        }, 60)
+        Bukkit.getScheduler().runTaskLaterAsynchronously(core.plugin(), Runnable { cooldown.remove(spawn) }, 60)
 
         return spawn
     }

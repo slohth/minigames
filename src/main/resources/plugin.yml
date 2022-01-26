@@ -1,5 +1,6 @@
 main: dev.slohth.minigames.plugin.MinigamesPlugin
 name: Minigames
 version: "DEV"
+api-version: 1.17
 commands:
   test:

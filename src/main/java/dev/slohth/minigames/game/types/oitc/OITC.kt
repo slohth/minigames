@@ -3,10 +3,12 @@ package dev.slohth.minigames.game.types.oitc
 import dev.slohth.minigames.Minigames
 import dev.slohth.minigames.arena.Lobby
 import dev.slohth.minigames.game.Game
+import dev.slohth.minigames.game.GameListener
 import dev.slohth.minigames.game.GameState
 import dev.slohth.minigames.game.GameType
 import dev.slohth.minigames.game.data.GameData
-import dev.slohth.minigames.game.data.comparator.KillsComparator
+import dev.slohth.minigames.game.data.GameDataStatistic
+import dev.slohth.minigames.game.data.comparator.GameDataComparator
 import dev.slohth.minigames.profile.Profile
 import dev.slohth.minigames.utils.CC
 import dev.slohth.minigames.utils.ItemBuilder
@@ -21,6 +23,7 @@ import java.util.*
 data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CHAMBER, 2, 8) {
 
     private val players: MutableSet<Profile> = HashSet()
+    private val listener: OITCListener = OITCListener(core, this)
 
     private var countdown: BukkitTask? = null
 
@@ -36,6 +39,8 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
         if (players.size == minPlayers() && state() == GameState.AWAITNG) initCountdown()
 
         broadcast("&3&l☞ &7${profile.player().name} has joined the queue")
+
+        updateSign()
         return true
     }
 
@@ -50,8 +55,6 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
 
         profile.player().inventory.clear()
 
-
-
         if (players.size < minPlayers() && state() == GameState.COUNTDOWN) {
             broadcast("&3&l☞ &7Not enough players to start")
             countdown?.cancel()
@@ -59,6 +62,7 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
             end(*players.toTypedArray())
         }
 
+        updateSign()
         if (players.isEmpty()) core.gameManager().unregister(this)
     }
 
@@ -167,9 +171,13 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
         winners[0].player().isGlowing = true
     }
 
+    override fun listener(): GameListener {
+        return listener
+    }
+
     fun topKillers(): LinkedList<Profile> {
         val killers: LinkedList<Profile> = LinkedList(players)
-        Collections.sort(killers, KillsComparator())
+        Collections.sort(killers, GameDataComparator(GameDataStatistic.KILLS))
         return killers
     }
 

@@ -2,6 +2,8 @@ package dev.slohth.minigames.game
 
 import dev.slohth.minigames.Minigames
 import dev.slohth.minigames.arena.Arena
+import dev.slohth.minigames.game.types.oitc.OITC
+import dev.slohth.minigames.game.types.oitc.OITCListener
 import dev.slohth.minigames.profile.Profile
 import java.util.*
 
@@ -21,6 +23,12 @@ abstract class Game(private val core: Minigames, private val type: GameType, pri
     abstract fun start()
     abstract fun end(vararg winners: Profile)
 
+    abstract fun listener(): GameListener
+
+    fun updateSign() {
+        core.gameManager().signFromGame(this)?.let { core.gameManager().updateSign(it) }
+    }
+
     fun type(): GameType { return type }
     fun arena(): Arena { return arena }
     fun minPlayers(): Int { return minPlayers }
@@ -29,5 +37,18 @@ abstract class Game(private val core: Minigames, private val type: GameType, pri
 
     fun state(): GameState { return state }
     fun state(state: GameState) { this.state = state }
+
+    companion object {
+        fun of(core: Minigames, type: GameType): Game {
+            return when (type) {
+                GameType.ONE_IN_THE_CHAMBER -> OITC(core)
+                GameType.DEATH_RUN -> OITC(core)
+                GameType.DEATH_TAG -> OITC(core)
+                GameType.TURF_WARS -> OITC(core)
+                GameType.CAPTURE_THE_FLAG -> OITC(core)
+                GameType.DRAGON_ESCAPE -> OITC(core)
+            }
+        }
+    }
 
 }

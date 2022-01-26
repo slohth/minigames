@@ -1,5 +1,5 @@
 arenas:
-  one-in-the-chamber:
+  ONE_IN_THE_CHAMBER:
     basic:
       - "world,-190.5,28,199.5,50,0"
       - "world,-205.5,30,235.5,120,0"
@@ -10,3 +10,6 @@ arenas:
       - "world,-250.5,30,173.5,0,0"
       - "world,-257.5,31,200.5,-90,0"
       - "world,-230.5,31,239.5,120,0"
+
+signs:
+  world,-47,19,224: ONE_IN_THE_CHAMBER

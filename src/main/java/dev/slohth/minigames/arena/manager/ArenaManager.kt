@@ -12,10 +12,10 @@ class ArenaManager(private val core: Minigames) {
     private val arenas: MutableMap<String, Pair<Arena, GameType>> = HashMap()
 
     init {
-        for (type: String in Config.ARENAS.getConfig().getConfigurationSection("arenas")!!.getKeys(false)) {
-            val gameType: GameType = GameType.valueOf(type.uppercase().replace("-", "_"))
+        for (type: String in Config.CONFIG.getConfig().getConfigurationSection("arenas")!!.getKeys(false)) {
+            val gameType: GameType = GameType.valueOf(type.uppercase())
 
-            for (entry: String in Config.ARENAS.getConfig().getConfigurationSection("areans.$type")!!.getKeys(false)) {
+            for (entry: String in Config.CONFIG.getConfig().getConfigurationSection("arenas.$type")!!.getKeys(false)) {
 
                 arenas[entry] = Pair(when (gameType) {
                     GameType.ONE_IN_THE_CHAMBER -> OITCArena(core)
