@@ -121,9 +121,8 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
         player.playSound(player.location, Sound.ENTITY_PLAYER_BIG_FALL, 100f, 0f)
         if (data.killstreak() % 5 == 0) player.world.strikeLightningEffect(player.location)
 
-        broadcast("&3&l☞ &3${profile.player().name} &7was killed by &3${player.name} &7${if (data.killstreak() == 1) "" else "(${ if (data.killstreak() % 5 == 0) "&b" else "" }${data.killstreak()}x&7)"}")
-
-        broadcast(profile.player().name + ": ${profile.data()!!.kills()}", killer.player().name + ": ${killer.data()!!.kills()}")
+        broadcast("&3&l☞ &3${profile.player().name} &7was killed by &3${player.name} " +
+                "&7${if (data.killstreak() == 1) "" else "(${ if (data.killstreak() % 5 == 0) "&b" else "" }${data.killstreak()}x&7)"}")
 
         if (data.kills() >= 20) end(killer)
     }
@@ -181,6 +180,7 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
     fun topKillers(): LinkedList<Profile> {
         val killers: LinkedList<Profile> = LinkedList(players)
         Collections.sort(killers, GameDataComparator(GameDataStatistic.KILLS))
+        killers.reverse()
         return killers
     }
 

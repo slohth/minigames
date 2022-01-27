@@ -39,7 +39,7 @@ class OITCListener(private val core: Minigames, private val game: Game) : GameLi
         if (e.entity.shooter !is Player) return
         val shooter: Profile? = core.profileManager().profile((e.entity.shooter as Player).uniqueId)
 
-        if (e.hitEntity == null || e.hitEntity !is Player) {
+        if (e.hitEntity == null || e.hitEntity !is Player || (e.hitEntity as Player).uniqueId == (e.entity.shooter as Player).uniqueId) {
             if (inGame(shooter)) e.entity.remove()
             return
         }

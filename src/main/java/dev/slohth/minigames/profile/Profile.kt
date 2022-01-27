@@ -13,7 +13,10 @@ data class Profile(private val id: UUID) {
 
     fun msg(vararg messages: String) {
         val builder: StringBuilder = StringBuilder()
-        for (m: String in  messages) builder.append(ChatColor.translateAlternateColorCodes('&', m)).append("\n")
+        for (i in messages.indices) {
+            builder.append(ChatColor.translateAlternateColorCodes('&', messages[i]))
+            if (i != messages.size - 1) builder.append("\n")
+        }
         player().sendMessage(builder.toString())
     }
 
