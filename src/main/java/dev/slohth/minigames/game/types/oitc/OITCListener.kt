@@ -47,7 +47,8 @@ class OITCListener(private val core: Minigames, private val game: Game) : GameLi
         val hit: Profile? = core.profileManager().profile((e.hitEntity as Player).uniqueId)
 
         if (!inGame(shooter) || !inGame(hit) || game.state() != GameState.ONGOING) return
-        game.handleDeath(shooter!!, hit!!)
+        game.handleDeath(hit!!, shooter!!)
+        e.entity.remove()
     }
 
     @EventHandler
@@ -59,10 +60,9 @@ class OITCListener(private val core: Minigames, private val game: Game) : GameLi
 
         if (!inGame(damager) || !inGame(damaged)) return
 
-        if (game.state() != GameState.ONGOING) {
-            e.isCancelled = true
-            return
-        }
+        e.isCancelled = true
+
+        if (game.state() != GameState.ONGOING) return
 
         if (e.finalDamage >= damaged!!.player().health) game.handleDeath(damaged, damager!!)
     }
@@ -70,7 +70,7 @@ class OITCListener(private val core: Minigames, private val game: Game) : GameLi
     @EventHandler
     fun onDeath(e: PlayerDeathEvent) {
         val profile: Profile? = core.profileManager().profile(e.entity.uniqueId)
-        if (!inGame(profile) || (game.state() == GameState.AWAITNG || game.state() == GameState.COUNTDOWN)) return
+        if (!inGame(profile)) return
         game.handleDeath(profile!!, null)
     }
 

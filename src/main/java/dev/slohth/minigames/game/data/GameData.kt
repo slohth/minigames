@@ -13,7 +13,7 @@ class GameData(private val game: Game) {
             GameDataStatistic.KILLS -> if (kills == other.kills()) 0 else if (kills > other.kills) 1 else -1
             GameDataStatistic.DEATHS -> if (deaths == other.deaths()) 0 else if (deaths > other.deaths) 1 else -1
             GameDataStatistic.KILLSTREAK -> if (killstreak == other.killstreak()) 0 else if (killstreak > other.killstreak) 1 else -1
-            GameDataStatistic.KILL_DEATH_RATIO -> { TODO("KDR calculation / comparison") }
+            GameDataStatistic.KILL_DEATH_RATIO -> { return 0 }
         }
     }
 

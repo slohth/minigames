@@ -27,6 +27,8 @@ class ProfileManager(private val core: Minigames)  : Listener {
 
     @EventHandler
     fun onQuit(e: PlayerQuitEvent) {
+        val profile: Profile = profiles[e.player.uniqueId] ?: return
+        if (profile.data() != null) profile.data()!!.game().removePlayer(profile)
         profiles.remove(e.player.uniqueId)
     }
 

@@ -35,6 +35,7 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
 
         profile.player().gameMode = GameMode.ADVENTURE
         profile.player().exp = 0F
+        profile.player().level = 0
 
         if (players.size == minPlayers() && state() == GameState.AWAITNG) initCountdown()
 
@@ -51,6 +52,7 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
         profile.player().gameMode = GameMode.ADVENTURE
         profile.player().teleport(Lobby.location())
         profile.player().exp = 0F
+        profile.player().level = 0
         profile.data(null)
 
         profile.player().inventory.clear()
@@ -89,7 +91,7 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
         if (!players.contains(profile) || (killer != null && !players.contains(killer))) return
 
         profile.data()!!.killstreak(0)
-        profile.data()!!.kills(profile.data()!!.kills() + 1)
+        profile.data()!!.deaths(profile.data()!!.deaths() + 1)
         profile.player().inventory.clear()
         profile.player().gameMode = GameMode.SPECTATOR
         profile.player().sendTitle(CC.color("&cYou died!"), CC.color("&7Respawning"), 20, 20, 20)
@@ -119,8 +121,9 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
         player.playSound(player.location, Sound.ENTITY_PLAYER_BIG_FALL, 100f, 0f)
         if (data.killstreak() % 5 == 0) player.world.strikeLightningEffect(player.location)
 
-        broadcast("&3&l☞ &3${profile.player().name} &7was killed by &3${player.name} &7" +
-                if (data.killstreak() == 1) "" else "(${ if (data.killstreak() % 5 == 0) "&b" else "" }${data.killstreak()}x&7)")
+        broadcast("&3&l☞ &3${profile.player().name} &7was killed by &3${player.name} &7${if (data.killstreak() == 1) "" else "(${ if (data.killstreak() % 5 == 0) "&b" else "" }${data.killstreak()}x&7)"}")
+
+        broadcast(profile.player().name + ": ${profile.data()!!.kills()}", killer.player().name + ": ${killer.data()!!.kills()}")
 
         if (data.kills() >= 20) end(killer)
     }

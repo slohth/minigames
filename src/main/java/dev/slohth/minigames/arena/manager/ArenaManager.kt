@@ -26,7 +26,7 @@ class ArenaManager(private val core: Minigames) {
                     GameType.TURF_WARS -> OITCArena(core)
                 }, gameType)
 
-                TODO("Other arena types")
+                //TODO("Other arena types")
             }
         }
     }

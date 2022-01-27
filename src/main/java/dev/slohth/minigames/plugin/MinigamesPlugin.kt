@@ -5,8 +5,12 @@ import org.bukkit.plugin.java.JavaPlugin
 
 class MinigamesPlugin : JavaPlugin() {
 
+    private lateinit var core: Minigames
+
     override fun onEnable() {
-        Minigames(this)
+        core = Minigames(this)
     }
+
+    fun core(): Minigames { return core }
 
 }

@@ -11,7 +11,7 @@ import org.bukkit.Location
 import org.bukkit.scheduler.BukkitRunnable
 import java.util.concurrent.ThreadLocalRandom
 
-class OITCArena(private val core: Minigames) : Arena("arenas.one-in-the-chamber.basic", GameType.ONE_IN_THE_CHAMBER) {
+class OITCArena(private val core: Minigames) : Arena("arenas.ONE_IN_THE_CHAMBER.basic", GameType.ONE_IN_THE_CHAMBER) {
 
     private val locations: MutableList<Location> = ArrayList()
     private val cooldown: MutableList<Location> = ArrayList()
