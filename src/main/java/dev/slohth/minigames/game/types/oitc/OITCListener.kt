@@ -60,11 +60,15 @@ class OITCListener(private val core: Minigames, private val game: Game) : GameLi
 
         if (!inGame(damager) || !inGame(damaged)) return
 
-        e.isCancelled = true
+        if (game.state() != GameState.ONGOING) {
+            e.isCancelled = true
+            return
+        }
 
-        if (game.state() != GameState.ONGOING) return
-
-        if (e.finalDamage >= damaged!!.player().health) game.handleDeath(damaged, damager!!)
+        if (e.finalDamage >= damaged!!.player().health) {
+            e.isCancelled = true
+            game.handleDeath(damaged, damager!!)
+        }
     }
 
     @EventHandler

@@ -1,97 +1,69 @@
-package dev.slohth.minigames.utils.framework.assemble;
+package dev.slohth.minigames.utils.framework.assemble
 
-import org.bukkit.ChatColor;
-import org.bukkit.scoreboard.Score;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
+import org.bukkit.ChatColor
+import org.bukkit.scoreboard.Team
 
-public class AssembleBoardEntry {
-
-    private final AssembleBoard board;
-    private String text, identifier;
-    private Team team;
-
-    public void setText(String text) {
-        this.text = text;
+class AssembleBoardEntry(private val board: AssembleBoard, private var text: String, position: Int) {
+    private var identifier: String?
+    private var team: Team? = null
+    fun setText(text: String) {
+        this.text = text
     }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
+    fun setIdentifier(identifier: String?) {
+        this.identifier = identifier
     }
 
-    public AssembleBoardEntry(AssembleBoard board, String text, int position) {
-        this.board = board;
-        this.text = text;
-		this.identifier = this.board.getUniqueIdentifier(position);
-
-        this.setup();
+    fun setup() {
+        val scoreboard = board.scoreboard ?: return
+        var teamName = identifier
+        if (teamName!!.length > 16) teamName = teamName.substring(0, 16)
+        var team = scoreboard.getTeam(teamName)
+        if (team == null) team = scoreboard.registerNewTeam(teamName)
+        if (team.entries == null || team.entries.isEmpty() || !team.entries.contains(identifier)) team.addEntry(
+            identifier!!
+        )
+        if (!board.entries.contains(this)) board.entries.add(this)
+        this.team = team
     }
 
-    public void setup() {
-        final Scoreboard scoreboard = this.board.getScoreboard();
-
-        if (scoreboard == null) {
-            return;
-        }
-
-        String teamName = this.identifier;
-
-        if (teamName.length() > 16)
-            teamName = teamName.substring(0, 16);
-
-        Team team = scoreboard.getTeam(teamName);
-
-        if (team == null)
-            team = scoreboard.registerNewTeam(teamName);
-
-        if (team.getEntries() == null || team.getEntries().isEmpty() || !team.getEntries().contains(this.identifier))
-            team.addEntry(this.identifier);
-
-        if (!this.board.getEntries().contains(this))
-            this.board.getEntries().add(this);
-
-        this.team = team;
-    }
-
-    public void send(int position) {
-        if (this.text.length() > 16) {
-            String prefix = this.text.substring(0, 16);
-            String suffix;
-
-            if (prefix.charAt(15) == ChatColor.COLOR_CHAR) {
-                prefix = prefix.substring(0, 15);
-                suffix = this.text.substring(15);
-
-            } else if (prefix.charAt(14) == ChatColor.COLOR_CHAR) {
-                prefix = prefix.substring(0, 14);
-                suffix = this.text.substring(14);
-
+    fun send(position: Int) {
+        if (text.length > 16) {
+            var prefix = text.substring(0, 16)
+            var suffix: String
+            if (prefix[15] == ChatColor.COLOR_CHAR) {
+                prefix = prefix.substring(0, 15)
+                suffix = text.substring(15)
+            } else if (prefix[14] == ChatColor.COLOR_CHAR) {
+                prefix = prefix.substring(0, 14)
+                suffix = text.substring(14)
             } else {
-                if (ChatColor.getLastColors(prefix).equalsIgnoreCase(ChatColor.getLastColors(this.identifier))) {
-                    suffix = this.text.substring(16);
+                suffix = if (ChatColor.getLastColors(prefix)
+                        .equals(ChatColor.getLastColors(identifier!!), ignoreCase = true)
+                ) {
+                    text.substring(16)
                 } else {
-                    suffix = ChatColor.getLastColors(prefix) + this.text.substring(16);
+                    ChatColor.getLastColors(prefix) + text.substring(16)
                 }
             }
-
-            if (suffix.length() > 16)
-                suffix = suffix.substring(0, 16);
-
-            this.team.setPrefix(prefix);
-            this.team.setSuffix(suffix);
-
+            if (suffix.length > 16) suffix = suffix.substring(0, 16)
+            team!!.prefix = prefix
+            team!!.suffix = suffix
         } else {
-            this.team.setPrefix(this.text);
-            this.team.setSuffix("");
+            team!!.prefix = text
+            team!!.suffix = ""
         }
-
-        Score score = this.board.getObjective().getScore(this.identifier);
-        score.setScore(position);
+        val score = board.objective!!.getScore(identifier!!)
+        score.score = position
     }
 
-    public void remove() {
-        this.board.getIdentifiers().remove(this.identifier);
-        this.board.getScoreboard().resetScores(this.identifier);
+    fun remove() {
+        board.identifiers.remove(identifier)
+        board.scoreboard.resetScores(identifier!!)
     }
 
+    init {
+        identifier = board.getUniqueIdentifier(position)
+        setup()
+    }
 }

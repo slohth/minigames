@@ -1,42 +1,28 @@
-package dev.slohth.minigames.utils.framework.assemble;
+package dev.slohth.minigames.utils.framework.assemble
 
-import dev.slohth.minigames.utils.framework.assemble.events.AssembleBoardCreateEvent;
-import dev.slohth.minigames.utils.framework.assemble.events.AssembleBoardDestroyEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import dev.slohth.minigames.utils.framework.assemble.events.AssembleBoardCreateEvent
+import dev.slohth.minigames.utils.framework.assemble.events.AssembleBoardDestroyEvent
+import org.bukkit.Bukkit
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 
-public class AssembleListener implements Listener {
+class AssembleListener(private val assemble: Assemble) : Listener {
+    @EventHandler
+    fun onPlayerJoin(e: PlayerJoinEvent) {
+        val createEvent = AssembleBoardCreateEvent(e.player)
+        Bukkit.getServer().pluginManager.callEvent(createEvent)
+        if (createEvent.isCancelled) return
+        assemble.boards[e.player.uniqueId] = AssembleBoard(e.player, assemble)
+    }
 
-	private final Assemble assemble;
-
-	public AssembleListener(Assemble assemble) {
-		this.assemble = assemble;
-	}
-
-	@EventHandler
-	public void onPlayerJoin(PlayerJoinEvent e) {
-		AssembleBoardCreateEvent createEvent = new AssembleBoardCreateEvent(e.getPlayer());
-		Bukkit.getServer().getPluginManager().callEvent(createEvent);
-
-		if (createEvent.isCancelled())
-			return;
-
-		this.assemble.getBoards().put(e.getPlayer().getUniqueId(), new AssembleBoard(e.getPlayer(), this.assemble));
-	}
-
-	@EventHandler
-	public void onPlayerQuit(PlayerQuitEvent e) {
-		AssembleBoardDestroyEvent destroyEvent = new AssembleBoardDestroyEvent(e.getPlayer());
-		Bukkit.getServer().getPluginManager().callEvent(destroyEvent);
-
-		if (destroyEvent.isCancelled())
-			return;
-
-		this.assemble.getBoards().remove(e.getPlayer().getUniqueId());
-		e.getPlayer().setScoreboard(Bukkit.getServer().getScoreboardManager().getMainScoreboard());
-	}
-
+    @EventHandler
+    fun onPlayerQuit(e: PlayerQuitEvent) {
+        val destroyEvent = AssembleBoardDestroyEvent(e.player)
+        Bukkit.getServer().pluginManager.callEvent(destroyEvent)
+        if (destroyEvent.isCancelled) return
+        assemble.boards.remove(e.player.uniqueId)
+        e.player.scoreboard = Bukkit.getServer().scoreboardManager!!.mainScoreboard
+    }
 }

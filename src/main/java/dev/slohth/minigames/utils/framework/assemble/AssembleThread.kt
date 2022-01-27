@@ -1,101 +1,66 @@
-package dev.slohth.minigames.utils.framework.assemble;
+package dev.slohth.minigames.utils.framework.assemble
 
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.ChatColor
+import java.util.*
+import java.util.function.Consumer
 
-import java.util.Collections;
-import java.util.List;
-
-public class AssembleThread extends Thread {
-
-    private final Assemble assemble;
-
-    AssembleThread(Assemble assemble) {
-        this.assemble = assemble;
-        this.start();
-    }
-
-    @Override
-    public void run() {
+class AssembleThread internal constructor(private val assemble: Assemble) : Thread() {
+    override fun run() {
         while (true) {
             try {
-                this.tick();
-            } catch (Exception e) {
-                e.printStackTrace();
+                tick()
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
             try {
-                sleep(assemble.getTicks() * 50);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                sleep(assemble.ticks * 50)
+            } catch (e: InterruptedException) {
+                e.printStackTrace()
             }
         }
     }
 
-    private void tick() {
-        for (Player player : this.assemble.getPlugin().getServer().getOnlinePlayers()) {
+    private fun tick() {
+        for (player in assemble.plugin.server.onlinePlayers) {
             try {
-                AssembleBoard board = this.assemble.getBoards().get(player.getUniqueId());
-
-                if (board == null)
-                    continue;
-
-                Scoreboard scoreboard = board.getScoreboard();
-                Objective objective = board.getObjective();
-
-                if (scoreboard == null || objective == null)
-                    continue;
-
-                String title = ChatColor.translateAlternateColorCodes('&', this.assemble.getAdapter().getTitle(player));
-
-                if (!objective.getDisplayName().equals(title))
-                    objective.setDisplayName(title);
-
-                List<String> newLines = this.assemble.getAdapter().getLines(player);
-
+                val board = assemble.boards[player.uniqueId] ?: continue
+                val scoreboard = board.scoreboard
+                val objective = board.objective
+                if (scoreboard == null || objective == null) continue
+                val title = ChatColor.translateAlternateColorCodes('&', assemble.adapter.getTitle(player)!!)
+                if (objective.displayName != title) objective.displayName = title
+                var newLines = assemble.adapter.getLines(player)
                 if (newLines == null || newLines.isEmpty()) {
-                    board.getEntries().forEach(AssembleBoardEntry::remove);
-                    board.getEntries().clear();
-
+                    board.entries.forEach(Consumer { obj: AssembleBoardEntry? -> obj!!.remove() })
+                    board.entries.clear()
                 } else {
-                    if (this.assemble.getAdapter().getLines(player).size() > 15)
-                        newLines = this.assemble.getAdapter().getLines(player).subList(0, 15);
-
-                    if (!this.assemble.getAssembleStyle().isDescending())
-                        Collections.reverse(newLines);
-
-                    if (board.getEntries().size() > newLines.size()) {
-                        for (int i = newLines.size(); i < board.getEntries().size(); i++) {
-                            AssembleBoardEntry entry = board.getEntryAtPosition(i);
-
-                            if (entry != null)
-                                entry.remove();
+                    if (assemble.adapter.getLines(player)!!.size > 15) newLines =
+                        assemble.adapter.getLines(player)!!.subList(0, 15)
+                    if (!assemble.assembleStyle.isDescending) Collections.reverse(newLines)
+                    if (board.entries.size > newLines.size) {
+                        for (i in newLines.size until board.entries.size) {
+                            val entry = board.getEntryAtPosition(i)
+                            entry?.remove()
                         }
                     }
-
-                    int cache = this.assemble.getAssembleStyle().getStartNumber();
-
-                    for (int i = 0; i < newLines.size(); i++) {
-                        AssembleBoardEntry entry = board.getEntryAtPosition(i);
-
-                        String line = ChatColor.translateAlternateColorCodes('&', newLines.get(i));
-
-                        if (entry == null)
-                            entry = new AssembleBoardEntry(board, line, i);
-
-                        entry.setText(line);
-                        entry.setup();
-                        entry.send(this.assemble.getAssembleStyle().isDescending() ? cache-- : cache++);
+                    var cache = assemble.assembleStyle.startNumber
+                    for (i in newLines.indices) {
+                        var entry = board.getEntryAtPosition(i)
+                        val line = ChatColor.translateAlternateColorCodes('&', newLines[i]!!)
+                        if (entry == null) entry = AssembleBoardEntry(board, line, i)
+                        entry.setText(line)
+                        entry.setup()
+                        entry.send(if (assemble.assembleStyle.isDescending) cache-- else cache++)
                     }
                 }
-
-                if (player.getScoreboard() != scoreboard && !assemble.isHook())
-                    player.setScoreboard(scoreboard);
-
-            } catch (Exception e) {
-                throw new AssembleException("There was an error updating " + player.getName() + "'s scoreboard.");
+                if (player.scoreboard !== scoreboard && !assemble.isHook) player.scoreboard = scoreboard
+            } catch (e: Exception) {
+                throw AssembleException("There was an error updating " + player.name + "'s scoreboard.")
             }
         }
+    }
+
+    init {
+        start()
     }
 }

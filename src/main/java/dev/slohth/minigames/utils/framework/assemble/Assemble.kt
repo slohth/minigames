@@ -1,117 +1,66 @@
-package dev.slohth.minigames.utils.framework.assemble;
+package dev.slohth.minigames.utils.framework.assemble
 
-import dev.slohth.minigames.utils.framework.assemble.events.AssembleBoardCreateEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.event.HandlerList;
-import org.bukkit.plugin.java.JavaPlugin;
+import dev.slohth.minigames.utils.framework.assemble.events.AssembleBoardCreateEvent
+import org.bukkit.Bukkit
+import org.bukkit.event.HandlerList
+import org.bukkit.plugin.java.JavaPlugin
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+class Assemble(plugin: JavaPlugin?, adapter: AssembleAdapter) {
+    val plugin: JavaPlugin
+    val adapter: AssembleAdapter
+    val boards: MutableMap<UUID?, AssembleBoard?>
+    var thread: AssembleThread? = null
+        private set
+    var listeners: AssembleListener? = null
+        private set
+    val ticks: Long = 2
+    val isHook = false
+    val assembleStyle = AssembleStyle.MODERN
+    val isDebugMode = true
+    fun setup() {
+        listeners = AssembleListener(this)
+        plugin.server.pluginManager.registerEvents(listeners!!, plugin)
+        if (thread != null) {
+            thread!!.stop()
+            thread = null
+        }
+        for (player in Bukkit.getServer().onlinePlayers) {
+            val createEvent = AssembleBoardCreateEvent(player)
+            Bukkit.getServer().pluginManager.callEvent(createEvent)
+            if (createEvent.isCancelled) return
+            boards.putIfAbsent(player.uniqueId, AssembleBoard(player, this))
+        }
+        thread = AssembleThread(this)
+    }
 
-public class Assemble {
+    fun cleanup() {
+        if (thread != null) {
+            thread!!.stop()
+            thread = null
+        }
+        if (listeners != null) {
+            HandlerList.unregisterAll(listeners!!)
+            listeners = null
+        }
+        for (uuid in boards.keys) {
+            val player = Bukkit.getServer().getPlayer(uuid!!)
+            if (player == null || !player.isOnline) {
+                continue
+            }
+            boards.remove(uuid)
+            player.scoreboard = Bukkit.getServer().scoreboardManager!!.newScoreboard
+        }
+    }
 
-	private final JavaPlugin plugin;
-	private final AssembleAdapter adapter;
-	private final Map<UUID, AssembleBoard> boards;
-	private AssembleThread thread;
-	private AssembleListener listeners;
-	private final long ticks = 2;
-	private final boolean hook = false;
-	private final AssembleStyle assembleStyle = AssembleStyle.MODERN;
-	private final boolean debugMode = true;
-
-	public Map<UUID, AssembleBoard> getBoards() {
-		return boards;
-	}
-
-	public JavaPlugin getPlugin() {
-		return plugin;
-	}
-
-	public AssembleThread getThread() {
-		return thread;
-	}
-
-	public AssembleListener getListeners() {
-		return listeners;
-	}
-
-	public long getTicks() {
-		return ticks;
-	}
-
-	public AssembleStyle getAssembleStyle() {
-		return assembleStyle;
-	}
-
-	public boolean isDebugMode() {
-		return debugMode;
-	}
-
-	public Assemble(final JavaPlugin plugin, final AssembleAdapter adapter) {
-		if (plugin == null) {
-			throw new RuntimeException("Assemble can not be instantiated without a plugin instance!");
-		}
-
-		this.plugin = plugin;
-		this.adapter = adapter;
-		this.boards = new ConcurrentHashMap<>();
-
-		this.setup();
-	}
-
-	public void setup() {
-		this.listeners = new AssembleListener(this);
-		this.plugin.getServer().getPluginManager().registerEvents(listeners, this.plugin);
-
-		if (this.thread != null) {
-			this.thread.stop();
-			this.thread = null;
-		}
-
-		for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-			AssembleBoardCreateEvent createEvent = new AssembleBoardCreateEvent(player);
-
-			Bukkit.getServer().getPluginManager().callEvent(createEvent);
-			if (createEvent.isCancelled())
-				return;
-
-			this.getBoards().putIfAbsent(player.getUniqueId(), new AssembleBoard(player, this));
-		}
-
-		this.thread = new AssembleThread(this);
-	}
-
-	public void cleanup() {
-		if (this.thread != null) {
-			this.thread.stop();
-			this.thread = null;
-		}
-
-		if (this.listeners != null) {
-			HandlerList.unregisterAll(this.listeners);
-			this.listeners = null;
-		}
-
-		for (UUID uuid : this.getBoards().keySet()) {
-			Player player = Bukkit.getServer().getPlayer(uuid);
-
-			if (player == null || !player.isOnline()) {
-				continue;
-			}
-
-			this.getBoards().remove(uuid);
-			player.setScoreboard(Bukkit.getServer().getScoreboardManager().getNewScoreboard());
-		}
-	}
-
-	public boolean isHook() {
-		return hook;
-	}
-
-	public AssembleAdapter getAdapter() {
-		return adapter;
-	}
+    init {
+        if (plugin == null) {
+            throw RuntimeException("Assemble can not be instantiated without a plugin instance!")
+        }
+        this.plugin = plugin
+        this.adapter = adapter
+        boards = ConcurrentHashMap()
+        setup()
+    }
 }

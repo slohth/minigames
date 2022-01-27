@@ -1,103 +1,72 @@
-package dev.slohth.minigames.utils.framework.assemble;
+package dev.slohth.minigames.utils.framework.assemble
 
-import dev.slohth.minigames.utils.framework.assemble.events.AssembleBoardCreatedEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
+import dev.slohth.minigames.utils.framework.assemble.events.AssembleBoardCreatedEvent
+import org.bukkit.Bukkit
+import org.bukkit.ChatColor
+import org.bukkit.entity.Player
+import org.bukkit.scoreboard.DisplaySlot
+import org.bukkit.scoreboard.Objective
+import org.bukkit.scoreboard.Scoreboard
+import java.util.*
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+class AssembleBoard(player: Player, assemble: Assemble) {
+    val entries: MutableList<AssembleBoardEntry?> = ArrayList()
+    val identifiers: MutableList<String?> = ArrayList()
+    val uuid: UUID
+    val assemble: Assemble
+    val scoreboard: Scoreboard
+        get() {
+            val player = Bukkit.getServer().getPlayer(uuid)
+            return if (assemble.isHook || player!!.scoreboard !== Bukkit.getServer().scoreboardManager!!
+                    .mainScoreboard
+            ) player!!.scoreboard else Bukkit.getServer().scoreboardManager!!.newScoreboard
+        }
+    val objective: Objective?
+        get() {
+            val scoreboard = scoreboard
+            if (scoreboard.getObjective("Assemble") == null) {
+                val objective = scoreboard.registerNewObjective("Assemble", "dummy")
+                objective.displaySlot = DisplaySlot.SIDEBAR
+                objective.displayName = assemble.adapter.getTitle(Bukkit.getServer().getPlayer(uuid))!!
+                return objective
+            }
+            return scoreboard.getObjective("Assemble")
+        }
 
-public class AssembleBoard {
+    private fun setup(player: Player) {
+        val scoreboard = scoreboard
+        player.scoreboard = scoreboard
+        objective
+        val createdEvent = AssembleBoardCreatedEvent(this)
+        Bukkit.getServer().pluginManager.callEvent(createdEvent)
+    }
 
-	private final List<AssembleBoardEntry> entries = new ArrayList<>();
-	private final List<String> identifiers = new ArrayList<>();
-	private final UUID uuid;
+    fun getEntryAtPosition(pos: Int): AssembleBoardEntry? {
+        return if (pos >= entries.size) {
+            null
+        } else {
+            entries[pos]
+        }
+    }
 
-	private final Assemble assemble;
+    fun getUniqueIdentifier(position: Int): String {
+        var identifier = getRandomChatColor(position) + ChatColor.WHITE
+        while (identifiers.contains(identifier)) identifier =
+            identifier + getRandomChatColor(position) + ChatColor.WHITE
+        if (identifier.length > 16) return getUniqueIdentifier(position)
+        identifiers.add(identifier)
+        return identifier
+    }
 
-	public List<AssembleBoardEntry> getEntries() {
-		return entries;
-	}
+    companion object {
+        private fun getRandomChatColor(position: Int): String {
+            return ChatColor.values()[position].toString()
+        }
+    }
 
-	public UUID getUuid() {
-		return uuid;
-	}
-
-	public Assemble getAssemble() {
-		return assemble;
-	}
-
-	public AssembleBoard(Player player, Assemble assemble) {
-		this.uuid = player.getUniqueId();
-		this.assemble = assemble;
-		this.setup(player);
-	}
-
-	public Scoreboard getScoreboard() {
-		Player player = Bukkit.getServer().getPlayer(getUuid());
-
-		if (this.getAssemble().isHook() || player.getScoreboard() != Bukkit.getServer().getScoreboardManager().getMainScoreboard())
-			return player.getScoreboard();
-
-		return Bukkit.getServer().getScoreboardManager().getNewScoreboard();
-	}
-
-	public Objective getObjective() {
-		Scoreboard scoreboard = this.getScoreboard();
-
-		if (scoreboard.getObjective("Assemble") == null) {
-			Objective objective = scoreboard.registerNewObjective("Assemble", "dummy");
-			objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-			objective.setDisplayName(this.getAssemble().getAdapter().getTitle(Bukkit.getServer().getPlayer(getUuid())));
-
-			return objective;
-		}
-
-		return scoreboard.getObjective("Assemble");
-	}
-
-
-	private void setup(Player player) {
-		Scoreboard scoreboard = getScoreboard();
-		player.setScoreboard(scoreboard);
-		this.getObjective();
-
-		AssembleBoardCreatedEvent createdEvent = new AssembleBoardCreatedEvent(this);
-		Bukkit.getServer().getPluginManager().callEvent(createdEvent);
-	}
-
-	public AssembleBoardEntry getEntryAtPosition(int pos) {
-		if (pos >= this.entries.size()) {
-			return null;
-		} else {
-			return this.entries.get(pos);
-		}
-	}
-
-	public String getUniqueIdentifier(int position) {
-		String identifier = getRandomChatColor(position) + ChatColor.WHITE;
-
-		while (this.identifiers.contains(identifier))
-			identifier = identifier + getRandomChatColor(position) + ChatColor.WHITE;
-
-		if (identifier.length() > 16)
-			return this.getUniqueIdentifier(position);
-
-		this.identifiers.add(identifier);
-
-		return identifier;
-	}
-
-	private static String getRandomChatColor(int position) {
-		return ChatColor.values()[position].toString();
-	}
-
-	public List<String> getIdentifiers() {
-		return identifiers;
-	}
+    init {
+        uuid = player.uniqueId
+        this.assemble = assemble
+        setup(player)
+    }
 }

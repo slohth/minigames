@@ -1,13 +1,8 @@
-package dev.slohth.minigames.utils.framework.assemble;
+package dev.slohth.minigames.utils.framework.assemble
 
-import org.bukkit.entity.Player;
+import org.bukkit.entity.Player
 
-import java.util.List;
-
-public interface AssembleAdapter {
-
-	String getTitle(Player player);
-
-	List<String> getLines(Player player);
-
+interface AssembleAdapter {
+    fun getTitle(player: Player?): String?
+    fun getLines(player: Player): List<String?>?
 }
