@@ -65,7 +65,7 @@ class GameManager(private val core: Minigames) : Listener {
         sign.setLine(0, CC.color("&8<&f&lMinigames&8>"))
         sign.setLine(1, CC.color("&7&l${game.type().key()}"))
         sign.setLine(2, CC.color(
-            if (game.playerCount() == 0) "&7" else "&b" + game.playerCount() + "&7/" + game.maxPlayers() + " players"
+            (if (game.playerCount() == 0) "&7" else "&b") + game.playerCount() + "&7/" + game.maxPlayers() + " players"
         ))
         sign.setLine(3, CC.color("&fClick to join"))
 

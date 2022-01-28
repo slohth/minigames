@@ -1,6 +1,10 @@
 package dev.slohth.minigames
 
+import dev.slohth.minigames.utils.ItemStackSerializer
+import dev.slohth.minigames.utils.TextComponentBuilder
 import net.md_5.bungee.api.ChatColor
+import net.md_5.bungee.api.chat.ClickEvent
+import net.md_5.bungee.api.chat.HoverEvent
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
@@ -15,10 +19,31 @@ class TestCommand : CommandExecutor {
 
         val player: Player = sender as Player
 
-        if (args.size >= 2) {
-            val a: MutableList<String> = ArrayList()
-            for (i in 1 until args.size) a.add(args[i])
-            player.sendMessage(gradient(args[0], *a.toTypedArray()))
+//        if (args.size >= 2) {
+//            val a: MutableList<String> = ArrayList()
+//            for (i in 1 until args.size) a.add(args[i])
+//            player.sendMessage(gradient(args[0], *a.toTypedArray()))
+//        }
+
+        if (args.isNotEmpty()) {
+
+            val input: StringBuilder = StringBuilder();
+
+            for (i in args.indices) {
+                input.append(args[i]).append(if (i != (args.size - 1)) " " else "")
+            }
+
+            player.sendMessage(input.toString())
+            player.inventory.addItem(ItemStackSerializer.deserialize(input.toString()))
+
+        } else {
+
+            val serialized: String = ItemStackSerializer.serialize(player.inventory.itemInMainHand)
+            player.spigot().sendMessage(
+                TextComponentBuilder("&aItem serialized! Click to copy.")
+                    .hover(HoverEvent.Action.SHOW_TEXT, "Click to copy")
+                    .click(ClickEvent.Action.SUGGEST_COMMAND, serialized).build())
+
         }
 
         return true
