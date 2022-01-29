@@ -30,7 +30,7 @@ class OITCListener(private val core: Minigames, private val game: Game) : GameLi
     @EventHandler
     fun onDropItem(e: PlayerDropItemEvent) {
         val profile: Profile? = core.profileManager().profile(e.player.uniqueId)
-        if (!inGame(profile) || (game.state() == GameState.ONGOING || game.state() == GameState.ENDED)) return
+        if (!isInGame(profile) || (game.state() == GameState.ONGOING || game.state() == GameState.ENDED)) return
         e.isCancelled = true
     }
 
@@ -40,13 +40,13 @@ class OITCListener(private val core: Minigames, private val game: Game) : GameLi
         val shooter: Profile? = core.profileManager().profile((e.entity.shooter as Player).uniqueId)
 
         if (e.hitEntity == null || e.hitEntity !is Player || (e.hitEntity as Player).uniqueId == (e.entity.shooter as Player).uniqueId) {
-            if (inGame(shooter)) e.entity.remove()
+            if (isInGame(shooter)) e.entity.remove()
             return
         }
 
         val hit: Profile? = core.profileManager().profile((e.hitEntity as Player).uniqueId)
 
-        if (!inGame(shooter) || !inGame(hit) || game.state() != GameState.ONGOING) return
+        if (!isInGame(shooter) || !isInGame(hit) || game.state() != GameState.ONGOING) return
         game.handleDeath(hit!!, shooter!!)
         e.entity.remove()
     }
@@ -58,7 +58,7 @@ class OITCListener(private val core: Minigames, private val game: Game) : GameLi
         val damager: Profile? = core.profileManager().profile((e.damager as Player).uniqueId)
         val damaged: Profile? = core.profileManager().profile((e.entity as Player).uniqueId)
 
-        if (!inGame(damager) || !inGame(damaged)) return
+        if (!isInGame(damager) || !isInGame(damaged)) return
 
         if (game.state() != GameState.ONGOING) {
             e.isCancelled = true
@@ -74,12 +74,12 @@ class OITCListener(private val core: Minigames, private val game: Game) : GameLi
     @EventHandler
     fun onDeath(e: PlayerDeathEvent) {
         val profile: Profile? = core.profileManager().profile(e.entity.uniqueId)
-        if (!inGame(profile)) return
-        game.handleDeath(profile!!, null)
+        if (!isInGame(profile) || profile!!.data()!!.game().state() != GameState.ONGOING) return
+        game.handleDeath(profile, null)
     }
 
-    private fun inGame(profile: Profile?): Boolean {
-        return !(profile?.data() == null || profile.data()?.game() != game)
+    private fun isInGame(profile: Profile?): Boolean {
+        return (profile != null && (profile.inGame() && profile.data()!!.game() == game))
     }
 
 }

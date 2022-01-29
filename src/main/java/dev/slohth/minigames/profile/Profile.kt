@@ -24,6 +24,10 @@ data class Profile(private val id: UUID) {
         return Bukkit.getPlayer(id)!!
     }
 
+    fun inGame(): Boolean {
+        return data != null
+    }
+
     fun id(): UUID { return id }
 
     fun data(): GameData? { return data }
