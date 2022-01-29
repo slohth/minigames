@@ -1,6 +1,7 @@
 package dev.slohth.minigames.profile.manager
 
 import dev.slohth.minigames.Minigames
+import dev.slohth.minigames.arena.Lobby
 import dev.slohth.minigames.profile.Profile
 import dev.slohth.minigames.utils.CC
 import org.bukkit.Bukkit
@@ -25,6 +26,7 @@ class ProfileManager(private val core: Minigames)  : Listener {
     @EventHandler
     fun onJoin(e: PlayerJoinEvent) {
         profiles[e.player.uniqueId] = Profile(e.player.uniqueId)
+        Lobby.spawnPlayer(e.player)
     }
 
     @EventHandler
@@ -40,7 +42,10 @@ class ProfileManager(private val core: Minigames)  : Listener {
     @EventHandler
     fun onChat(e: AsyncPlayerChatEvent) {
         e.message = CC.color(e.message)
-        e.format = CC.color("&9${e.player.name}: &7${e.message}")
+        e.format = when (e.player.uniqueId) {
+            UUID.fromString("09c34f63-faca-4963-ac47-14ee71391e38") -> CC.color("&c${e.player.name}: &7${e.message}")
+            else -> CC.color("&9${e.player.name}: &7${e.message}")
+        }
     }
 
 }

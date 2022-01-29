@@ -15,6 +15,7 @@ import dev.slohth.minigames.utils.ItemBuilder
 import org.bukkit.*
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
+import org.bukkit.potion.PotionEffect
 import org.bukkit.scheduler.BukkitRunnable
 import org.bukkit.scheduler.BukkitTask
 import java.util.*
@@ -49,13 +50,9 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
         players.remove(profile)
 
         if (profile.player().isGlowing) profile.player().isGlowing = false
-        profile.player().gameMode = GameMode.ADVENTURE
-        profile.player().teleport(Lobby.location())
-        profile.player().exp = 0F
-        profile.player().level = 0
         profile.data(null)
-
         profile.player().inventory.clear()
+        Lobby.spawnPlayer(profile.player())
 
         if (players.size < minPlayers() && state() == GameState.COUNTDOWN) {
             broadcast("&3&l☞ &7Not enough players to start")
@@ -144,6 +141,7 @@ data class OITC(private val core: Minigames) : Game(core, GameType.ONE_IN_THE_CH
         state(GameState.ONGOING)
         for (profile: Profile in players) {
             profile.player().teleport(arena().getSpawn(profile, profile.data()!!))
+            for (effect: PotionEffect in profile.player().activePotionEffects) profile.player().removePotionEffect(effect.type)
             handleInventory(profile)
         }
     }

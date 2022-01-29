@@ -12,4 +12,4 @@ arenas:
       - "world,-230.5,31,239.5,120,0"
 
 signs:
-  world,-47,19,224: ONE_IN_THE_CHAMBER
+  world,90,19,354: ONE_IN_THE_CHAMBER
