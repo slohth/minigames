@@ -29,6 +29,7 @@ class ProfileManager(private val core: Minigames)  : Listener {
     @EventHandler
     fun onJoin(e: PlayerJoinEvent) {
         profiles[e.player.uniqueId] = Profile(e.player.uniqueId)
+        Lobby.team().addEntry(e.player.name)
         Lobby.spawnPlayer(e.player)
     }
 
@@ -45,7 +46,7 @@ class ProfileManager(private val core: Minigames)  : Listener {
     fun onChat(e: AsyncPlayerChatEvent) {
         e.message = CC.color(e.message)
         e.format = when (e.player.uniqueId) {
-            UUID.fromString("09c34f63-faca-4963-ac47-14ee71391e38") -> CC.color("&c${e.player.name}: &7${e.message}")
+            //UUID.fromString("09c34f63-faca-4963-ac47-14ee71391e38") -> CC.color("&c${e.player.name}: &7${e.message}")
             else -> CC.color("&9${e.player.name}: &7${e.message}")
         }
     }

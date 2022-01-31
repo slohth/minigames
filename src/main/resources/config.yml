@@ -10,6 +10,21 @@ arenas:
       - "world,-250.5,30,173.5,0,0"
       - "world,-257.5,31,200.5,-90,0"
       - "world,-230.5,31,239.5,120,0"
+    sinkhole:
+      - "world,223.5,51,359.5,-50,0"
+      - "world,221.5,40,364.5,-20,0"
+      - "world,210.5,44,374.5,-40,0"
+      - "world,206.5,40,388.5,-20,0"
+      - "world,217.5,43,415.5,-150,0"
+      - "world,228.5,42,416.5,-140,0"
+      - "world,251.5,43,414.5,170,0"
+      - "world,264.5,47,392.5,100,0"
+      - "world,258.5,40,372.5,80,0"
 
 signs:
+  world,89,19,354: ONE_IN_THE_CHAMBER
   world,90,19,354: ONE_IN_THE_CHAMBER
+  world,91,19,354: ONE_IN_THE_CHAMBER
+  world,89,20,354: ONE_IN_THE_CHAMBER
+  world,90,20,354: ONE_IN_THE_CHAMBER
+  world,91,20,354: ONE_IN_THE_CHAMBER

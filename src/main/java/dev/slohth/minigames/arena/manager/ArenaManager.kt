@@ -18,12 +18,12 @@ class ArenaManager(private val core: Minigames) {
             for (entry: String in Config.CONFIG.getConfig().getConfigurationSection("arenas.$type")!!.getKeys(false)) {
 
                 arenas[entry] = Pair(when (gameType) {
-                    GameType.ONE_IN_THE_CHAMBER -> OITCArena(core)
-                    GameType.CAPTURE_THE_FLAG -> OITCArena(core)
-                    GameType.DEATH_TAG -> OITCArena(core)
-                    GameType.DRAGON_ESCAPE -> OITCArena(core)
-                    GameType.DEATH_RUN -> OITCArena(core)
-                    GameType.TURF_WARS -> OITCArena(core)
+                    GameType.ONE_IN_THE_CHAMBER -> OITCArena(core, entry)
+                    GameType.CAPTURE_THE_FLAG -> OITCArena(core, entry)
+                    GameType.DEATH_TAG -> OITCArena(core, entry)
+                    GameType.DRAGON_ESCAPE -> OITCArena(core, entry)
+                    GameType.DEATH_RUN -> OITCArena(core, entry)
+                    GameType.TURF_WARS -> OITCArena(core, entry)
                 }, gameType)
 
                 //TODO("Other arena types")
